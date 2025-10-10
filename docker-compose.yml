@@ -1,0 +1,19 @@
+services:
+
+  api:
+    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PRODUCTION: ${PRODUCTION}
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/ping/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    build:
+      context: ./

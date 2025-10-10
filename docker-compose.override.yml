@@ -1,0 +1,25 @@
+services:
+
+  api:
+    restart: "no"
+    ports:
+      - "8000:8000"
+    build:
+      context: ./
+    command:
+      - fastapi
+      - run
+      - --reload
+      - "app/main.py"
+    develop:
+      watch:
+        - path: ./
+          action: sync
+          target: /app
+          ignore:
+            - .venv
+        - path: ./pyproject.toml
+          action: rebuild
+    environment:
+      PRODUCTION: false
+      LOG_FILE_PATH: service-dev.log
