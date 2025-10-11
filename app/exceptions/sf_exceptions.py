@@ -9,4 +9,4 @@ from api_exception import BaseExceptionCode
 class SFExceptionCode(BaseExceptionCode):
     """自定义异常代码类"""
 
-    USER_NOT_FOUND = ("USR-404", "User not found.")
+    ITEM_NOT_FOUND = ("ITM-404", "Item not found.")

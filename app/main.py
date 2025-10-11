@@ -1,11 +1,16 @@
-from api_exception import add_file_handler, logger
+from api_exception import (
+    ResponseFormat,
+    add_file_handler,
+    logger,
+    register_exception_handlers,
+)
 from fastapi import FastAPI
 
-from app.config import settings
-from app.routers import api_app
+from app.api.v1.api import api_router_v1
+from app.core.config import settings
 
 # 根据环境设置日志级别
-if settings.PRODUCTION:
+if settings.ENVIRONMENT == "production":
     logger.setLevel("ERROR")
 else:
     logger.setLevel("INFO")
@@ -13,8 +18,20 @@ else:
 # 添加文件日志处理器
 add_file_handler(settings.LOG_FILE_PATH, level=logger.level)
 
-# 初始化 FastAPI 应用
-app = FastAPI(title="Standard FastAPI Template", docs_url=None, redoc_url=None)
 
-# 挂载API路由
-app.mount("/api/v1", api_app)
+# 初始化 FastAPI 应用
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.API_VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+)
+
+app.include_router(api_router_v1, prefix=settings.API_V1_STR)
+
+# 注册异常处理器
+register_exception_handlers(
+    app=app,
+    response_format=ResponseFormat.RFC7807,
+    log_traceback=not settings.ENVIRONMENT == "production",
+    log_traceback_unhandled_exception=not settings.ENVIRONMENT == "production",
+)

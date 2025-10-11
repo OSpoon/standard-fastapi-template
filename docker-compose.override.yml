@@ -1,4 +1,8 @@
 services:
+  db:
+    restart: "no"
+    ports:
+      - "5432:5432"
 
   api:
     restart: "no"
@@ -21,5 +25,5 @@ services:
         - path: ./pyproject.toml
           action: rebuild
     environment:
-      PRODUCTION: false
+      ENVIRONMENT: local
       LOG_FILE_PATH: service-dev.log

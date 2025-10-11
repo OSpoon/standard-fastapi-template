@@ -29,21 +29,15 @@ cd standard-fastapi-template
 
 ### 初始化环境
 
-安装所有依赖项
+安装所有依赖项 (主要用于本地开发或 IDE 识别):
 
 ```bash
 uv sync
 ```
 
-激活虚拟环境
-
-```bash
-source .venv/bin/activate
-```
-
 ### 启动项目
 
-在监听模式下启动服务：
+在本地开发模式下启动服务 (监听文件变化并自动重启)：
 
 ```bash
 docker compose watch
@@ -63,28 +57,34 @@ docker compose watch
 ### 项目结构
 
 ```
-├── app/                     # FastAPI 应用程序代码
-│   ├── __init__.py
-│   ├── config/              # 应用配置
-│   ├── exceptions/          # 异常处理模块
-│   ├── main.py              # 应用入口点
-│   ├── models/              # 数据模型定义
-│   └── routers/             # API 路由定义
+├── app/                        # FastAPI 应用程序代码目录
+│   ├── alembic/                # Alembic 数据库迁移目录
+│   ├── api/                    # API 路由和依赖目录
+│   │   ├── deps.py             # 依赖注入文件
+│   │   └── v1/                 # API 版本 1 目录
+│   │       ├── endpoints/      # API 接口端点目录
+│   │       │   ├── items.py    # 示例 API 路由文件
+│   │       │   └── utils.py    # API 工具函数文件
+│   │       └── api.py          # API 路由定义文件
+│   ├── core/                   # 核心配置和数据库连接目录
+│   │   ├── config.py           # 配置设置文件
+│   │   └── db.py               # 数据库连接和会话文件
+│   ├── exceptions/             # 异常处理模块目录
+│   │   └── sf_exceptions.py    # 自定义异常文件
+│   ├── crud.py                 # 数据库操作 (CRUD) 文件
+│   ├── main.py                 # 应用入口点文件
+│   └── models.py               # 数据模型定义文件
+├── scripts/                    # 辅助脚本目录
+│   ├── format.sh               # 格式化脚本
+│   └── lint.sh                 # Linting 脚本
+├── .env                        # 环境变量配置文件
+├── alembic.ini                 # Alembic 配置文件
 ├── docker-compose.override.yml # Docker Compose 覆盖文件 (开发环境)
-├── docker-compose.yml       # Docker Compose 主配置文件
-├── pyproject.toml           # 项目依赖和工具配置
-├── scripts/                 # 辅助脚本
-│   ├── format.sh
-│   └── lint.sh
-├── uv.lock                  # uv 依赖锁定文件
-├── .dockerignore
-├── .env                     # 环境变量配置文件
-├── .gitignore
-├── .python-version
-├── .vscode/                 # VS Code 配置
-├── Dockerfile               # Docker 镜像构建文件
-├── LICENSE
-└── README.md
+├── docker-compose.yml          # Docker Compose 主配置文件
+├── Dockerfile                  # Docker 镜像构建文件
+├── LICENSE                     # 许可证文件
+├── pyproject.toml              # 项目依赖和工具配置文件
+└── README.md                   # 项目说明文件
 ```
 
 ## 贡献

@@ -1,19 +1,83 @@
 services:
-
-  api:
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+  db:
+    image: postgres:17
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:
-      PRODUCTION: ${PRODUCTION}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+
+  prestart:
+    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    build:
+      context: ./
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    command: "sh -c 'alembic upgrade head'"
+    env_file:
+      - .env
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME}
+      API_VERSION: ${API_VERSION}
+      API_V1_STR: ${API_V1_STR}
+
+      ENVIRONMENT: ${ENVIRONMENT}
+
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
+      
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+
+  api:
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      prestart:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME}
+      API_VERSION: ${API_VERSION}
+      API_V1_STR: ${API_V1_STR}
+
+      ENVIRONMENT: ${ENVIRONMENT}
+
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
+      
       LOG_FILE_PATH: ${LOG_FILE_PATH}
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/ping/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
       timeout: 5s
       retries: 5
 
     build:
       context: ./
+
+volumes:
+  app-db-data:
