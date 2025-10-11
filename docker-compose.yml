@@ -95,6 +95,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    
+    volumes:
+      - ./app/alembic/versions:/app/app/alembic/versions
 
     build:
       context: ./
