@@ -44,6 +44,8 @@ services:
       
       LOG_FILE_PATH: ${LOG_FILE_PATH}
 
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+
   api:
     image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
@@ -69,6 +71,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
       
       LOG_FILE_PATH: ${LOG_FILE_PATH}
+
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
