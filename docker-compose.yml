@@ -32,15 +32,21 @@ services:
       db:
         condition: service_healthy
         restart: true
-    command: "sh -c 'alembic upgrade head'"
+    command: bash scripts/prestart.sh
     env_file:
       - .env
     environment:
       PROJECT_NAME: ${PROJECT_NAME}
       API_VERSION: ${API_VERSION}
       API_V1_STR: ${API_V1_STR}
-
       ENVIRONMENT: ${ENVIRONMENT}
+
+      FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
+
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+      SECRET_KEY: ${SECRET_KEY?Variable not set}
+      SUPERUSER: ${SUPERUSER?Variable not set}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD?Variable not set}
 
       POSTGRES_SERVER: db
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -49,13 +55,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
 
       SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_TLS: ${SMTP_TLS}
+      SMTP_SSL: ${SMTP_SSL}
       EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
       
       LOG_FILE_PATH: ${LOG_FILE_PATH}
-
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
 
   backend:
     image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
@@ -72,8 +79,14 @@ services:
       PROJECT_NAME: ${PROJECT_NAME}
       API_VERSION: ${API_VERSION}
       API_V1_STR: ${API_V1_STR}
-
       ENVIRONMENT: ${ENVIRONMENT}
+
+      FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
+
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+      SECRET_KEY: ${SECRET_KEY?Variable not set}
+      SUPERUSER: ${SUPERUSER?Variable not set}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD?Variable not set}
 
       POSTGRES_SERVER: db
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -82,13 +95,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
 
       SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_TLS: ${SMTP_TLS}
+      SMTP_SSL: ${SMTP_SSL}
       EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
       
       LOG_FILE_PATH: ${LOG_FILE_PATH}
 
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
@@ -96,9 +111,6 @@ services:
       timeout: 5s
       retries: 5
     
-    volumes:
-      - ./app/alembic/versions:/app/app/alembic/versions
-
     build:
       context: ./
 

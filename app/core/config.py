@@ -2,6 +2,7 @@
 应用程序设置
 """
 
+import secrets
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -12,7 +13,7 @@ from pydantic import (
     computed_field,
     model_validator,
 )
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
 
@@ -25,6 +26,8 @@ def parse_cors(v: Any) -> list[str] | str:
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     """应用程序设置类"""
 
     PROJECT_NAME: str = ""
@@ -32,6 +35,25 @@ class Settings(BaseSettings):
     LOG_FILE_PATH: str = ""
     API_VERSION: str = ""
     API_V1_STR: str = ""
+
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    # 60 minutes * 24 hours * 8 days = 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+
+    SUPERUSER: EmailStr
+    SUPERUSER_PASSWORD: str
+
+    FRONTEND_HOST: str = "http://localhost:5173"
+    BACKEND_CORS_ORIGINS: Annotated[
+        list[AnyUrl] | str, BeforeValidator(parse_cors)
+    ] = []
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def all_cors_origins(self) -> list[str]:
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
+            self.FRONTEND_HOST
+        ]
 
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
@@ -50,15 +72,6 @@ class Settings(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
-
-    BACKEND_CORS_ORIGINS: Annotated[
-        list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS]
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
@@ -79,6 +92,8 @@ class Settings(BaseSettings):
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
+
+    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
 
 settings = Settings()  # type: ignore

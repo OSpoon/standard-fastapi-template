@@ -42,7 +42,7 @@ app.include_router(api_router_v1, prefix=settings.API_V1_STR)
 # 注册异常处理器
 register_exception_handlers(
     app=app,
-    response_format=ResponseFormat.RFC7807,
+    response_format=ResponseFormat.RESPONSE_MODEL,
     log_traceback=not settings.ENVIRONMENT == "production",
     log_traceback_unhandled_exception=not settings.ENVIRONMENT == "production",
 )

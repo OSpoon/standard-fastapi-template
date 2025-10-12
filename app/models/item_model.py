@@ -1,6 +1,10 @@
 import uuid
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.models.user_model import User
 
 
 # Shared properties
@@ -22,13 +26,19 @@ class ItemUpdate(ItemBase):
 # Database model, database table inferred from class name
 class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    title: str = Field(max_length=255)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: Optional["User"] = Relationship(back_populates="items")
 
 
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
+    owner_id: uuid.UUID
 
 
 class ItemsPublic(SQLModel):
-    items: list[ItemPublic]
+    data: list[ItemPublic]
     count: int

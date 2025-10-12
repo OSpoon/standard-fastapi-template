@@ -57,34 +57,56 @@ docker compose watch
 ### 项目结构
 
 ```
-├── app/                        # FastAPI 应用程序代码目录
-│   ├── alembic/                # Alembic 数据库迁移目录
-│   ├── api/                    # API 路由和依赖目录
-│   │   ├── deps.py             # 依赖注入文件
-│   │   └── v1/                 # API 版本 1 目录
-│   │       ├── endpoints/      # API 接口端点目录
-│   │       │   ├── items.py    # 示例 API 路由文件
-│   │       │   └── utils.py    # API 工具函数文件
-│   │       └── api.py          # API 路由定义文件
-│   ├── core/                   # 核心配置和数据库连接目录
-│   │   ├── config.py           # 配置设置文件
-│   │   └── db.py               # 数据库连接和会话文件
-│   ├── exceptions/             # 异常处理模块目录
-│   │   └── sf_exceptions.py    # 自定义异常文件
-│   ├── crud.py                 # 数据库操作 (CRUD) 文件
-│   ├── main.py                 # 应用入口点文件
-│   └── models.py               # 数据模型定义文件
-├── scripts/                    # 辅助脚本目录
-│   ├── format.sh               # 格式化脚本
-│   └── lint.sh                 # Linting 脚本
-├── .env                        # 环境变量配置文件
-├── alembic.ini                 # Alembic 配置文件
+├── .vscode/                 # VS Code 配置目录
+│   └── settings.json        # VS Code 设置文件
+├── app/                     # FastAPI 应用程序代码目录
+│   ├── alembic/             # Alembic 数据库迁移目录
+│   │   ├── README           # Alembic README 文件
+│   │   ├── env.py           # Alembic 环境配置
+│   │   ├── script.py.mako   # Alembic 脚本模板
+│   │   └── versions/        # Alembic 迁移版本目录
+│   ├── api/                 # API 路由和依赖目录
+│   │   ├── deps.py          # 依赖注入文件
+│   │   └── v1/              # API 版本 1 目录
+│   │       ├── api.py       # API 路由定义文件
+│   │       └── endpoints/   # API 接口端点目录
+│   │           ├── items.py # 示例 API 路由文件
+│   │           └── users.py # 用户 API 路由文件
+│   ├── core/                # 核心配置和数据库连接目录
+│   │   ├── config.py        # 配置设置文件
+│   │   ├── db.py            # 数据库连接和会话文件
+│   │   └── security.py      # 安全相关工具文件
+│   ├── crud/                # 数据库操作 (CRUD) 目录
+│   │   ├── item_crud.py     # Item 相关的 CRUD 操作
+│   │   └── user_crud.py     # User 相关的 CRUD 操作
+│   ├── exceptions/          # 异常处理模块目录
+│   │   └── sf_exceptions.py # 自定义异常文件
+│   ├── models/              # 数据模型定义目录
+│   │   ├── __init__.py      # 模型包初始化文件
+│   │   ├── common_model.py  # 通用模型文件
+│   │   ├── item_model.py    # Item 模型文件
+│   │   └── user_model.py    # User 模型文件
+│   ├── templates/           # 模板文件目录
+│   │   └── email/           # 邮件模板目录
+│   ├── initial_data.py      # 初始数据脚本
+│   ├── main.py              # 应用入口点文件
+│   └── utils.py             # 工具函数文件
+├── scripts/                 # 辅助脚本目录
+│   ├── format.sh            # 格式化脚本
+│   ├── lint.sh              # Linting 脚本
+│   └── prestart.sh          # 预启动脚本
+├── .dockerignore            # Docker 忽略文件
+├── .env                     # 环境变量配置文件
+├── .gitignore               # Git 忽略文件
+├── .python-version          # Python 版本文件
+├── alembic.ini              # Alembic 配置文件
 ├── docker-compose.override.yml # Docker Compose 覆盖文件 (开发环境)
-├── docker-compose.yml          # Docker Compose 主配置文件
-├── Dockerfile                  # Docker 镜像构建文件
-├── LICENSE                     # 许可证文件
-├── pyproject.toml              # 项目依赖和工具配置文件
-└── README.md                   # 项目说明文件
+├── docker-compose.yml       # Docker Compose 主配置文件
+├── Dockerfile               # Docker 镜像构建文件
+├── LICENSE                  # 许可证文件
+├── pyproject.toml           # 项目依赖和工具配置文件
+├── README.md                # 项目说明文件
+└── uv.lock                  # uv 依赖锁定文件
 ```
 
 ## 贡献
