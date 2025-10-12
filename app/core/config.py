@@ -37,11 +37,9 @@ class Settings(BaseSettings):
     API_V1_STR: str = ""
 
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    # 60 minutes * 24 hours * 8 days = 8 days
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
-    SUPERUSER: EmailStr
-    SUPERUSER_PASSWORD: str
+    # API Key settings
+    API_KEY_PREFIX: str = "sk"  # API Key 前缀
 
     FRONTEND_HOST: str = "http://localhost:5173"
     BACKEND_CORS_ORIGINS: Annotated[
@@ -80,7 +78,7 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     EMAILS_FROM_EMAIL: EmailStr | None = None
-    EMAILS_FROM_NAME: EmailStr | None = None
+    EMAILS_FROM_NAME: str | None = None
 
     @model_validator(mode="after")
     def _set_default_emails_from(self) -> Self:
@@ -92,8 +90,6 @@ class Settings(BaseSettings):
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
-
-    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
 
 settings = Settings()  # type: ignore

@@ -1,27 +1,15 @@
 from collections.abc import Generator
 from typing import Annotated
 
-import jwt
 from api_exception import APIException
-from fastapi import Depends, status
-from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
-from pydantic import ValidationError
+from fastapi import Depends, Security, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
 
-from app.core import security
-from app.core.config import settings
 from app.core.db import engine
+from app.crud import apikey_crud
 from app.exceptions.sf_exceptions import SFExceptionCode
-from app.models.common_model import TokenPayload
-from app.models.user_model import User
-
-# 注意：默认 OAuth2PasswordBearer 会在缺失 Authorization 头时直接抛出 HTTPException(401, "Not authenticated")
-# 这会绕过我们统一的异常结构。通过设置 auto_error=False，让其在缺失时返回 None，由我们自行抛出 APIException。
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/login/access-token",
-    auto_error=False,
-)
+from app.models.apikey_model import APIKey
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -30,48 +18,62 @@ def get_db() -> Generator[Session, None, None]:
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-TokenDep = Annotated[str | None, Depends(reusable_oauth2)]
+
+# 为 OpenAPI/Swagger 提供 Bearer 安全方案，从而显示 Authorize 按钮
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def get_current_user(session: SessionDep, token: TokenDep) -> User:
-    # 缺失或空 token：统一返回 401 与自定义错误码
-    if not token:
+def get_api_key_from_header(
+    credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
+) -> str | None:
+    """
+    获取 API Key, 优先使用 Swagger/安全方案注入的 Bearer token
+    """
+    # 优先使用 Swagger/安全方案注入的 Bearer token
+    if credentials and credentials.credentials:
+        return credentials.credentials
+    return None
+
+
+def get_current_api_key(
+    session: SessionDep,
+    api_key: str | None = Depends(get_api_key_from_header),
+) -> APIKey:
+    """
+    验证 API Key 并返回 APIKey 对象
+    """
+    if not api_key:
         raise APIException(
             error_code=SFExceptionCode.UNAUTHORIZED,
             http_status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "Bearer"},
         )
-    try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
-        token_data = TokenPayload(**payload)
-    except (InvalidTokenError, ValidationError):
-        # 无效 token：根据预期返回 401 Unauthorized，而不是 403
+
+    # 根据 key 查找 API Key
+    db_api_key = apikey_crud.get_api_key_by_key(session=session, key=api_key)
+    if not db_api_key:
         raise APIException(
-            error_code=SFExceptionCode.UNAUTHORIZED,
+            error_code=SFExceptionCode.INVALID_APIKEY,
             http_status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Bearer"},
         )
-    user = session.get(User, token_data.sub)
-    if not user:
-        raise APIException(
-            error_code=SFExceptionCode.USER_NOT_FOUND, http_status_code=404
-        )
-    if not user.is_active:
-        raise APIException(
-            error_code=SFExceptionCode.USER_INACTIVE, http_status_code=400
-        )
-    return user
+
+    # 验证 API Key 是否有效
+    if not apikey_crud.is_api_key_valid(db_api_key):
+        if not db_api_key.is_active:
+            raise APIException(
+                error_code=SFExceptionCode.APIKEY_INACTIVE,
+                http_status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+        else:  # 过期
+            raise APIException(
+                error_code=SFExceptionCode.APIKEY_EXPIRED,
+                http_status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+
+    # 更新最后使用时间
+    apikey_crud.update_last_used(session=session, api_key=db_api_key)
+
+    return db_api_key
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
-
-
-def get_current_active_superuser(current_user: CurrentUser) -> User:
-    if not current_user.is_superuser:
-        raise APIException(
-            error_code=SFExceptionCode.INSUFFICIENT_PRIVILEGES,
-            http_status_code=403,
-        )
-    return current_user
+CurrentAPIKey = Annotated[APIKey, Depends(get_current_api_key)]

@@ -1,0 +1,35 @@
+<mjml>
+  <mj-body background-color="#fafbfc">
+    <mj-section background-color="#fff" padding="40px 20px">
+      <mj-column vertical-align="middle" width="100%">
+        <mj-text align="center" padding="35px" font-size="20px" font-family="Arial, Helvetica, sans-serif" color="#333">{{ project_name }}</mj-text>
+        <mj-text align="center" font-size="18px" padding="20px 25px" font-family="Arial, Helvetica, sans-serif" color="#2c3e50"> 新的 API Key 已创建 </mj-text>
+        <mj-text align="left" font-size="16px" padding="10px 25px" font-family="Arial, Helvetica, sans-serif" color="#555"> 你好， </mj-text>
+        <mj-text align="left" font-size="16px" padding="10px 25px" font-family="Arial, Helvetica, sans-serif" color="#555"> 我们已为你的账户 <strong>{{ email }}</strong> 成功创建了一个新的 API Key。以下是详细信息： </mj-text>
+
+        <mj-divider border-color="#eee" border-width="1px" padding="20px 0"></mj-divider>
+
+        <mj-text align="left" font-size="14px" font-family="Arial, Helvetica, sans-serif" color="#666" background-color="#f8f9fa" padding="20px 25px">
+          <strong>API Key 名称：</strong> {{ api_key_name }}<br /><br />
+          <strong>API Key：</strong> <code style="background-color: #e9ecef; padding: 2px 4px; border-radius: 3px">{{ api_key }}</code><br /><br />
+          <strong>创建时间：</strong> {{ created_at }}<br /><br />
+          <strong>有效期：</strong> {{ expires_info }}<br /><br />
+          <strong>状态：</strong> <span style="color: #28a745">{{ status }}</span>
+        </mj-text>
+
+        <mj-divider border-color="#eee" border-width="1px" padding="20px 0"></mj-divider>
+
+        <mj-text align="left" font-size="16px" padding="10px 25px" font-family="Arial, Helvetica, sans-serif" color="#555">
+          <strong style="color: #e74c3c">重要提醒：</strong>
+        </mj-text>
+        <mj-text align="left" font-size="14px" padding="5px 25px" font-family="Arial, Helvetica, sans-serif" color="#555"> • 请妥善保管你的 API Key，不要与他人分享 </mj-text>
+        <mj-text align="left" font-size="14px" padding="5px 25px" font-family="Arial, Helvetica, sans-serif" color="#555"> • 如果怀疑 API Key 泄露，请立即在系统中删除它 </mj-text>
+        <mj-text align="left" font-size="14px" padding="5px 25px" font-family="Arial, Helvetica, sans-serif" color="#555"> • 建议定期轮换你的 API Key 以确保安全 </mj-text>
+
+        <mj-divider border-color="#ccc" border-width="2px" padding="20px 0"></mj-divider>
+
+        <mj-text align="center" font-size="12px" padding="10px 25px" font-family="Arial, Helvetica, sans-serif" color="#888"> 如果你没有创建此 API Key，请立即联系我们的支持团队。 </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

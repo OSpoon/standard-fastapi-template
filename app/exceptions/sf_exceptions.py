@@ -38,3 +38,11 @@ class SFExceptionCode(BaseExceptionCode):
         "New password cannot be the same as the current one.",
     )
     INSUFFICIENT_PRIVILEGES = ("AUTH-403", "The user doesn't have enough privileges.")
+
+    # API Key 相关异常
+    APIKEY_NOT_FOUND = ("APIKEY-404", "API Key not found.")
+    CREATE_APIKEY_ERROR = ("APIKEY-500", "Failed to create API Key.")
+    UPDATE_APIKEY_ERROR = ("APIKEY-501", "Failed to update API Key.")
+    INVALID_APIKEY = ("APIKEY-401", "Invalid API Key.")
+    APIKEY_EXPIRED = ("APIKEY-402", "API Key has expired.")
+    APIKEY_INACTIVE = ("APIKEY-403", "API Key is inactive.")

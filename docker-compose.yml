@@ -13,6 +13,7 @@ services:
     env_file:
       - .env
     environment:
+      - TZ=Asia/Shanghai
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
@@ -36,6 +37,7 @@ services:
     env_file:
       - .env
     environment:
+      TZ: Asia/Shanghai
       PROJECT_NAME: ${PROJECT_NAME}
       API_VERSION: ${API_VERSION}
       API_V1_STR: ${API_V1_STR}
@@ -76,6 +78,7 @@ services:
     env_file:
       - .env
     environment:
+      TZ: Asia/Shanghai
       PROJECT_NAME: ${PROJECT_NAME}
       API_VERSION: ${API_VERSION}
       API_V1_STR: ${API_V1_STR}
