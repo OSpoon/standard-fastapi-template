@@ -11,6 +11,12 @@ class SFExceptionCode(BaseExceptionCode):
 
     ITEM_NOT_FOUND = ("ITM-404", "Item not found")
     INCORRECT_EMAIL_OR_PASSWORD = ("AUTH-401", "Incorrect email or password.")
+    # 统一未认证/凭证缺失或无效时的错误码与文案
+    UNAUTHORIZED = (
+        "AUTH-401",
+        "Unauthorized",
+        "Authentication credentials were missing or invalid.",
+    )
     USER_INACTIVE = ("USR-402", "Inactive user.")
     USER_EMAIL_NOT_FOUND = (
         "USR-403",
