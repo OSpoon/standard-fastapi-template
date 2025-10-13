@@ -62,7 +62,3 @@ register_exception_handlers(
     log_traceback=not settings.ENVIRONMENT == "production",
     log_traceback_unhandled_exception=not settings.ENVIRONMENT == "production",
 )
-
-
-# 注册429限流异常处理器
-# app.exception_handler(HTTPException)(http_exception_handler)
