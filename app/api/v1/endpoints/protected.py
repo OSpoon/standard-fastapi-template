@@ -5,9 +5,10 @@
 from typing import Any
 
 from api_exception import ResponseModel
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.api.deps import CurrentAPIKey
+from app.core.rate_limit import rate_limit_dependency
 from app.models.common_model import Message
 
 router = APIRouter()
@@ -16,9 +17,10 @@ router = APIRouter()
 @router.get("/protected", response_model=ResponseModel[Message])
 def protected_endpoint(
     current_api_key: CurrentAPIKey,
+    _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[Message]:
     """
-    受保护的端点示例，需要有效的 API Key
+    受保护的端点示例，需要有效的 API Key，并受频率限制
     """
     return ResponseModel(
         data=Message(message=f"Hello! Your API Key belongs to: {current_api_key.email}")
@@ -28,6 +30,7 @@ def protected_endpoint(
 @router.get("/user-info", response_model=ResponseModel[dict[str, Any]])
 def get_api_key_info(
     current_api_key: CurrentAPIKey,
+    _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[dict[str, Any]]:
     """
     获取当前 API Key 的信息

@@ -46,3 +46,4 @@ class SFExceptionCode(BaseExceptionCode):
     INVALID_APIKEY = ("APIKEY-401", "Invalid API Key.")
     APIKEY_EXPIRED = ("APIKEY-402", "API Key has expired.")
     APIKEY_INACTIVE = ("APIKEY-403", "API Key is inactive.")
+    APIKEY_RATE_LIMIT_EXCEEDED = ("APIKEY-429", "Too Many Requests.")

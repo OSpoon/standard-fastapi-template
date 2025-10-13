@@ -1,3 +1,6 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from api_exception import (
     ResponseFormat,
     add_file_handler,
@@ -9,6 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router_v1
 from app.core.config import settings
+from app.core.rate_limit import init_rate_limiter
 
 # 根据环境设置日志级别
 if settings.ENVIRONMENT == "production":
@@ -21,10 +25,20 @@ add_file_handler(settings.LOG_FILE_PATH, level=logger.level)
 
 
 # 初始化 FastAPI 应用
+
+
+# 启动前初始化
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    await init_rate_limiter(settings.REDIS_URL)
+    yield
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.API_VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
 )
 
 # Set all CORS enabled origins
@@ -37,7 +51,9 @@ if settings.all_cors_origins:
         allow_headers=["*"],
     )
 
+
 app.include_router(api_router_v1, prefix=settings.API_V1_STR)
+
 
 # 注册异常处理器
 register_exception_handlers(
@@ -46,3 +62,7 @@ register_exception_handlers(
     log_traceback=not settings.ENVIRONMENT == "production",
     log_traceback_unhandled_exception=not settings.ENVIRONMENT == "production",
 )
+
+
+# 注册429限流异常处理器
+# app.exception_handler(HTTPException)(http_exception_handler)
