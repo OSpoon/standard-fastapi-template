@@ -68,3 +68,60 @@ def generate_new_apikey_email(
         },
     )
     return EmailData(html_content=html_content, subject=subject)
+
+
+def generate_update_apikey_email(
+    email_to: str,
+    api_key_name: str,
+    api_key_prefix: str,
+    updated_at: str,
+    new_expires_info: str,
+    status: str,
+    changes_summary: str,
+) -> EmailData:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - API Key 已更新"
+
+    # 根据状态设置颜色
+    status_color = "#28a745" if status == "激活" else "#6c757d"
+
+    html_content = render_email_template(
+        template_name="update_apikey.html",
+        context={
+            "project_name": settings.PROJECT_NAME,
+            "email": email_to,
+            "api_key_name": api_key_name,
+            "api_key_prefix": api_key_prefix,
+            "updated_at": updated_at,
+            "new_expires_info": new_expires_info,
+            "status": status,
+            "status_color": status_color,
+            "changes_summary": changes_summary,
+        },
+    )
+    return EmailData(html_content=html_content, subject=subject)
+
+
+def generate_delete_apikey_email(
+    email_to: str,
+    api_key_name: str,
+    api_key_prefix: str,
+    deleted_at: str,
+    created_at: str,
+    last_used_info: str,
+) -> EmailData:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - API Key 已删除"
+    html_content = render_email_template(
+        template_name="delete_apikey.html",
+        context={
+            "project_name": settings.PROJECT_NAME,
+            "email": email_to,
+            "api_key_name": api_key_name,
+            "api_key_prefix": api_key_prefix,
+            "deleted_at": deleted_at,
+            "created_at": created_at,
+            "last_used_info": last_used_info,
+        },
+    )
+    return EmailData(html_content=html_content, subject=subject)

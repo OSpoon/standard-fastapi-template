@@ -13,7 +13,12 @@ from app.models.apikey_model import (
     APIKeyWithKey,
 )
 from app.models.common_model import Message
-from app.utils import generate_new_apikey_email, send_email
+from app.utils import (
+    generate_delete_apikey_email,
+    generate_new_apikey_email,
+    generate_update_apikey_email,
+    send_email,
+)
 
 router = APIRouter()
 
@@ -119,6 +124,48 @@ def update_api_key(
         updated_api_key = apikey_crud.update_api_key(
             session=session, db_api_key=api_key, api_key_update=api_key_in
         )
+
+        # 发送邮件通知用户API Key已更新
+        try:
+            # 生成更新变更摘要
+            changes = []
+            api_key_data = api_key_in.model_dump(exclude_unset=True)
+            if "name" in api_key_data:
+                changes.append(f"• 名称更新为: {api_key_data['name']}")
+            if "is_active" in api_key_data:
+                status = "激活" if api_key_data["is_active"] else "停用"
+                changes.append(f"• 状态更新为: {status}")
+            if "expiry_days" in api_key_data:
+                changes.append(f"• 有效期更新为: {api_key_data['expiry_days']}天")
+
+            changes_summary = "\n".join(changes) if changes else "• 基本信息更新"
+
+            expires_info = (
+                updated_api_key.expires_at.strftime("%Y年%m月%d日 %H:%M:%S")
+                if updated_api_key.expires_at
+                else "永不过期"
+            )
+
+            email_data = generate_update_apikey_email(
+                email_to=updated_api_key.email,
+                api_key_name=updated_api_key.name,
+                api_key_prefix=updated_api_key.key_prefix,
+                updated_at=updated_api_key.updated_at.strftime("%Y年%m月%d日 %H:%M:%S"),
+                new_expires_info=expires_info,
+                status="激活" if updated_api_key.is_active else "停用",
+                changes_summary=changes_summary,
+            )
+            send_email(
+                email_to=updated_api_key.email,
+                subject=email_data.subject,
+                html_content=email_data.html_content,
+            )
+        except Exception as e:
+            # 邮件发送失败不影响API调用，只记录日志
+            from api_exception import logger
+
+            logger.warning(f"Failed to send API key update email: {e}")
+
         # 只返回指定字段，包含 key
         api_key_public = APIKeyPublic(
             id=updated_api_key.id,
@@ -144,11 +191,54 @@ def delete_api_key(*, session: SessionDep, api_key_id: str) -> ResponseModel[Mes
     """
     删除 API Key
     """
+    # 先获取API Key信息用于发送邮件
+    api_key = apikey_crud.get_api_key_by_key(session=session, key=api_key_id)
+    if not api_key:
+        raise APIException(
+            error_code=SFExceptionCode.APIKEY_NOT_FOUND,
+            http_status_code=404,
+        )
+
+    # 保存邮件需要的信息
+    email_to = api_key.email
+    api_key_name = api_key.name
+    api_key_prefix = api_key.key_prefix
+    created_at = api_key.created_at.strftime("%Y年%m月%d日 %H:%M:%S")
+    last_used_info = (
+        api_key.last_used_at.strftime("%Y年%m月%d日 %H:%M:%S")
+        if api_key.last_used_at
+        else "从未使用"
+    )
+
+    # 删除API Key
     success = apikey_crud.delete_api_key_by_key(session=session, key=api_key_id)
     if not success:
         raise APIException(
             error_code=SFExceptionCode.APIKEY_NOT_FOUND,
             http_status_code=404,
         )
+
+    # 发送邮件通知用户API Key已删除
+    try:
+        from datetime import datetime
+
+        email_data = generate_delete_apikey_email(
+            email_to=email_to,
+            api_key_name=api_key_name,
+            api_key_prefix=api_key_prefix,
+            deleted_at=datetime.now().strftime("%Y年%m月%d日 %H:%M:%S"),
+            created_at=created_at,
+            last_used_info=last_used_info,
+        )
+        send_email(
+            email_to=email_to,
+            subject=email_data.subject,
+            html_content=email_data.html_content,
+        )
+    except Exception as e:
+        # 邮件发送失败不影响API调用，只记录日志
+        from api_exception import logger
+
+        logger.warning(f"Failed to send API key deletion email: {e}")
 
     return ResponseModel(data=Message(message="API Key 删除成功"))
