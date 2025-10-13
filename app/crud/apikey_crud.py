@@ -1,13 +1,13 @@
 import secrets
 import string
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pydantic import EmailStr
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.models.apikey_model import APIKey, APIKeyCreate, APIKeyUpdate
+from app.models.apikey_model import APIKey, APIKeyCreate, APIKeyUpdate, ExpiryDays
 
 
 def generate_api_key() -> tuple[str, str]:
@@ -28,6 +28,13 @@ def generate_api_key() -> tuple[str, str]:
     return full_key, prefix
 
 
+def calculate_expiry_date(expiry_days: ExpiryDays) -> datetime:
+    """
+    根据天数档位计算过期时间
+    """
+    return datetime.now() + timedelta(days=expiry_days.value)
+
+
 def create_api_key(*, session: Session, api_key_create: APIKeyCreate) -> APIKey:
     """
     创建新的 API Key
@@ -35,12 +42,15 @@ def create_api_key(*, session: Session, api_key_create: APIKeyCreate) -> APIKey:
     # 生成 API Key
     full_key, key_prefix = generate_api_key()
 
+    # 根据天数档位计算过期时间
+    expires_at = calculate_expiry_date(api_key_create.expiry_days)
+
     # 创建数据库记录
     db_api_key = APIKey(
         email=api_key_create.email,
         name=api_key_create.name,
         is_active=api_key_create.is_active,
-        expires_at=api_key_create.expires_at,
+        expires_at=expires_at,
         key=full_key,
         key_prefix=key_prefix,
     )
@@ -92,6 +102,12 @@ def update_api_key(
     """
     api_key_data = api_key_update.model_dump(exclude_unset=True)
 
+    # 处理expiry_days字段，转换为expires_at
+    if "expiry_days" in api_key_data:
+        expiry_days = api_key_data.pop("expiry_days")
+        db_api_key.expires_at = calculate_expiry_date(expiry_days)
+
+    # 更新其他字段
     for field, value in api_key_data.items():
         setattr(db_api_key, field, value)
 
