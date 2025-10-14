@@ -1,8 +1,8 @@
 """init sqlmodels
 
-Revision ID: fcb977a2a907
+Revision ID: 18d461077ffb
 Revises: 
-Create Date: 2025-10-12 23:20:01.201414
+Create Date: 2025-10-14 13:31:00.613373
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fcb977a2a907'
+revision: str = '18d461077ffb'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,10 +26,10 @@ def upgrade() -> None:
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('expires_at', sa.DateTime(), nullable=True),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('key', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('key_prefix', sqlmodel.sql.sqltypes.AutoString(length=10), nullable=False),
+    sa.Column('expires_at', sa.DateTime(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('last_used_at', sa.DateTime(), nullable=True),

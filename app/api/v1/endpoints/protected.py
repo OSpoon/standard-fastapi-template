@@ -7,7 +7,7 @@ from typing import Any
 from api_exception import ResponseModel
 from fastapi import APIRouter, Depends
 
-from app.api.deps import CurrentAPIKey
+from app.api.deps import CurrentAPIKeyAsync
 from app.core.rate_limit import rate_limit_dependency
 from app.models.common_model import Message
 
@@ -15,8 +15,8 @@ router = APIRouter()
 
 
 @router.get("/protected", response_model=ResponseModel[Message])
-def protected_endpoint(
-    current_api_key: CurrentAPIKey,
+async def protected_endpoint(
+    current_api_key: CurrentAPIKeyAsync,
     _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[Message]:
     """
@@ -28,8 +28,8 @@ def protected_endpoint(
 
 
 @router.get("/user-info", response_model=ResponseModel[dict[str, Any]])
-def get_api_key_info(
-    current_api_key: CurrentAPIKey,
+async def get_api_key_info(
+    current_api_key: CurrentAPIKeyAsync,
     _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[dict[str, Any]]:
     """

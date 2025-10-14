@@ -1,4 +1,7 @@
+import secrets
+import string
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +12,7 @@ from api_exception import (
 from jinja2 import Template
 
 from app.core.config import settings
+from app.models.apikey_model import APIKey, ExpiryDays
 
 
 @dataclass
@@ -125,3 +129,43 @@ def generate_delete_apikey_email(
         },
     )
     return EmailData(html_content=html_content, subject=subject)
+
+
+def generate_api_key() -> tuple[str, str]:
+    """
+    生成 API Key 和其前缀
+    格式: sk-<random_string>
+    """
+    # 使用项目设置中的前缀，如果没有设置则使用默认前缀
+    prefix = getattr(settings, "API_KEY_PREFIX", "sk")
+
+    # 生成随机字符串
+    alphabet = string.ascii_letters + string.digits
+    random_string = "".join(secrets.choice(alphabet) for _ in range(48))
+
+    # 组合完整的 API Key
+    full_key = f"{prefix}-{random_string}"
+
+    return full_key, prefix
+
+
+def calculate_expiry_date(expiry_days: ExpiryDays) -> datetime:
+    """
+    根据天数档位计算过期时间
+    """
+    return datetime.now() + timedelta(days=expiry_days.value)
+
+
+def is_api_key_valid(api_key: APIKey) -> bool:
+    """
+    检查 API Key 是否有效
+    """
+    # 检查是否激活
+    if not api_key.is_active:
+        return False
+
+    # 检查是否过期
+    if api_key.expires_at and api_key.expires_at < datetime.now():
+        return False
+
+    return True

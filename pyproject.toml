@@ -17,6 +17,7 @@ dependencies = [
     "fastapi-limiter[redis]>=0.1.6",
     "redis>=6.4.0",
     "fastapi-cache2>=0.2.2",
+    "asyncpg>=0.30.0",
 ]
 
 [dependency-groups]

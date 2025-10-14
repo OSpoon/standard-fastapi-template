@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi_cache.decorator import cache
 from pydantic import EmailStr
 
-from app.api.deps import SessionDep
+from app.api.deps import AsyncSessionDep
 from app.core.rate_limit import rate_limit_dependency
 from app.crud import apikey_crud
 from app.exceptions.sf_exceptions import SFExceptionCode
@@ -26,9 +26,9 @@ router = APIRouter()
 
 
 @router.post("/", response_model=ResponseModel[APIKeyWithKey])
-def create_api_key(
+async def create_api_key(
     *,
-    session: SessionDep,
+    session: AsyncSessionDep,
     api_key_in: APIKeyCreate,
     _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[APIKeyWithKey]:
@@ -36,7 +36,9 @@ def create_api_key(
     创建新的 API Key
     """
     try:
-        api_key = apikey_crud.create_api_key(session=session, api_key_create=api_key_in)
+        api_key = await apikey_crud.create_api_key(
+            session=session, api_key_create=api_key_in
+        )
 
         # 发送邮件通知用户
         try:
@@ -74,7 +76,7 @@ def create_api_key(
 @router.get("/", response_model=ResponseModel[APIKeysPublic])
 @cache(expire=10)
 async def read_api_keys(
-    session: SessionDep,
+    session: AsyncSessionDep,
     email: EmailStr = Query(..., description="邮箱地址"),
     skip: int = 0,
     limit: int = 100,
@@ -82,7 +84,7 @@ async def read_api_keys(
     """
     根据邮箱获取 API Keys 列表
     """
-    api_keys, count = apikey_crud.get_api_keys_by_email(
+    api_keys, count = await apikey_crud.get_api_keys_by_email(
         session=session, email=email, skip=skip, limit=limit
     )
 
@@ -110,16 +112,16 @@ async def read_api_keys(
 
 
 @router.patch("/{api_key_id}", response_model=ResponseModel[APIKeyPublic])
-def update_api_key(
+async def update_api_key(
     *,
-    session: SessionDep,
+    session: AsyncSessionDep,
     api_key_id: str,
     api_key_in: APIKeyUpdate,
 ) -> ResponseModel[APIKeyPublic]:
     """
     更新 API Key 信息
     """
-    api_key = apikey_crud.get_api_key_by_key(session=session, key=api_key_id)
+    api_key = await apikey_crud.get_api_key_by_key(session=session, key=api_key_id)
     if not api_key:
         raise APIException(
             error_code=SFExceptionCode.APIKEY_NOT_FOUND,
@@ -127,7 +129,7 @@ def update_api_key(
         )
 
     try:
-        updated_api_key = apikey_crud.update_api_key(
+        updated_api_key = await apikey_crud.update_api_key(
             session=session, db_api_key=api_key, api_key_update=api_key_in
         )
 
@@ -193,12 +195,14 @@ def update_api_key(
 
 
 @router.delete("/{api_key_id}", response_model=ResponseModel[Message])
-def delete_api_key(*, session: SessionDep, api_key_id: str) -> ResponseModel[Message]:
+async def delete_api_key(
+    *, session: AsyncSessionDep, api_key_id: str
+) -> ResponseModel[Message]:
     """
     删除 API Key
     """
     # 先获取API Key信息用于发送邮件
-    api_key = apikey_crud.get_api_key_by_key(session=session, key=api_key_id)
+    api_key = await apikey_crud.get_api_key_by_key(session=session, key=api_key_id)
     if not api_key:
         raise APIException(
             error_code=SFExceptionCode.APIKEY_NOT_FOUND,
@@ -217,7 +221,7 @@ def delete_api_key(*, session: SessionDep, api_key_id: str) -> ResponseModel[Mes
     )
 
     # 删除API Key
-    success = apikey_crud.delete_api_key_by_key(session=session, key=api_key_id)
+    success = await apikey_crud.delete_api_key_by_key(session=session, key=api_key_id)
     if not success:
         raise APIException(
             error_code=SFExceptionCode.APIKEY_NOT_FOUND,
