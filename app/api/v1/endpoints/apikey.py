@@ -1,8 +1,9 @@
 from api_exception import APIException, ResponseModel
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import EmailStr
 
 from app.api.deps import SessionDep
+from app.core.rate_limit import rate_limit_dependency
 from app.crud import apikey_crud
 from app.exceptions.sf_exceptions import SFExceptionCode
 from app.models.apikey_model import (
@@ -25,7 +26,10 @@ router = APIRouter()
 
 @router.post("/", response_model=ResponseModel[APIKeyWithKey])
 def create_api_key(
-    *, session: SessionDep, api_key_in: APIKeyCreate
+    *,
+    session: SessionDep,
+    api_key_in: APIKeyCreate,
+    _: None = Depends(rate_limit_dependency),
 ) -> ResponseModel[APIKeyWithKey]:
     """
     创建新的 API Key
