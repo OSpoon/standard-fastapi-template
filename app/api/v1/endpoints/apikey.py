@@ -1,5 +1,6 @@
 from api_exception import APIException, ResponseModel
 from fastapi import APIRouter, Depends, Query
+from fastapi_cache.decorator import cache
 from pydantic import EmailStr
 
 from app.api.deps import SessionDep
@@ -71,7 +72,8 @@ def create_api_key(
 
 
 @router.get("/", response_model=ResponseModel[APIKeysPublic])
-def read_api_keys(
+@cache(expire=10)
+async def read_api_keys(
     session: SessionDep,
     email: EmailStr = Query(..., description="邮箱地址"),
     skip: int = 0,

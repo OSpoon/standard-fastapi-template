@@ -1,15 +1,28 @@
 from collections.abc import Generator
 from typing import Annotated
 
+import redis.asyncio as aioredis
 from api_exception import APIException
 from fastapi import Depends, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis.asyncio import Redis
 from sqlmodel import Session
 
+from app.core.config import settings
 from app.core.db import engine
 from app.crud import apikey_crud
 from app.exceptions.sf_exceptions import SFExceptionCode
 from app.models.apikey_model import APIKey
+
+
+async def get_redis_client() -> Redis:
+    redis = await aioredis.from_url(  # type: ignore
+        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
+        max_connections=10,
+        encoding="utf8",
+        decode_responses=True,
+    )
+    return redis  # type: ignore[no-any-return]
 
 
 def get_db() -> Generator[Session, None, None]:

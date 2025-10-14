@@ -1,8 +1,6 @@
 from math import ceil
 
-import redis.asyncio as aioredis
 from api_exception import APIException
-from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from starlette.requests import Request
 from starlette.responses import Response
@@ -48,14 +46,6 @@ async def ws_default_callback(
         error_code=SFExceptionCode.APIKEY_RATE_LIMIT_EXCEEDED,
         http_status_code=429,
         headers={"Retry-After": str(expire)},
-    )
-
-
-# 初始化限流（建议在 main.py 的 lifespan 事件中调用）
-async def init_rate_limiter(redis_url: str) -> None:
-    redis = aioredis.from_url(redis_url, encoding="utf-8", decode_responses=True)  # type: ignore
-    await FastAPILimiter.init(
-        redis, http_callback=http_default_callback, ws_callback=ws_default_callback
     )
 
 
