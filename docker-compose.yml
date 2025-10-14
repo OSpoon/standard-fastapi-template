@@ -22,8 +22,8 @@ services:
   redis:
     image: "redis:latest"
     restart: always
-    expose:
-      - 6379
+    ports:
+      - "6379:6379"
     env_file:
       - .env
 
