@@ -39,7 +39,9 @@ add_file_handler(settings.LOG_FILE_PATH, level=logger.level)
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Initializing FastAPI...")
     redis_client = await get_redis_client()
-    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+    FastAPICache.init(
+        RedisBackend(redis_client), prefix=settings.PROJECT_NAME + "-cache"
+    )
     await FastAPILimiter.init(
         redis_client,
         http_callback=http_default_callback,
