@@ -10,12 +10,16 @@ from api_exception import (
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-from fastapi_limiter import FastAPILimiter, http_default_callback, ws_default_callback
+from fastapi_limiter import FastAPILimiter
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router_v1
 from app.core.config import settings
+from app.core.rate_limit import (
+    http_default_callback,
+    ws_default_callback,
+)
 
 # 根据环境设置日志级别
 if settings.ENVIRONMENT == "production":
