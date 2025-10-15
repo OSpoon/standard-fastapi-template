@@ -47,3 +47,14 @@ class SFExceptionCode(BaseExceptionCode):
     APIKEY_EXPIRED = ("APIKEY-402", "API Key has expired.")
     APIKEY_INACTIVE = ("APIKEY-403", "API Key is inactive.")
     APIKEY_RATE_LIMIT_EXCEEDED = ("APIKEY-429", "Too Many Requests.")
+
+    # 幂等性相关异常
+    IDEMPOTENCY_KEY_MISSING = ("IDEMPOT-400", "Idempotency-Key header is required.")
+    IDEMPOTENCY_SIGNATURE_MISMATCH = (
+        "IDEMPOT-409",
+        "Request signature mismatch for the same Idempotency-Key.",
+    )
+    IDEMPOTENCY_IN_PROGRESS = (
+        "IDEMPOT-102",
+        "A request with the same Idempotency-Key is currently being processed.",
+    )

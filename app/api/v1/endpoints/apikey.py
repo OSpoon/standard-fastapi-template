@@ -1,9 +1,20 @@
+from typing import Annotated
+
 from api_exception import APIException, ResponseModel
-from fastapi import APIRouter, Depends, Query
+from fastapi import (
+    APIRouter,
+    Depends,
+    Header,
+    Query,
+    Request,
+    Response,
+)
 from fastapi_cache.decorator import cache
 from pydantic import EmailStr
 
 from app.api.deps import AsyncSessionDep
+from app.core.config import settings
+from app.core.idempotency.decorator import idempotent
 from app.core.rate_limit import rate_limit_dependency
 from app.crud import apikey_crud
 from app.exceptions.sf_exceptions import SFExceptionCode
@@ -26,8 +37,18 @@ router = APIRouter()
 
 
 @router.post("/", response_model=ResponseModel[APIKeyWithKey])
+@idempotent()
 async def create_api_key(
     *,
+    request: Request,  # noqa: ARG001 - used by idempotency
+    response: Response,  # noqa: ARG001 - used by idempotency
+    _idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias=settings.IDEMPOTENCY_KEY_HEADER,
+            description="Client-supplied idempotency key used to prevent duplicate processing.",
+        ),
+    ] = None,
     session: AsyncSessionDep,
     api_key_in: APIKeyCreate,
     _: None = Depends(rate_limit_dependency),

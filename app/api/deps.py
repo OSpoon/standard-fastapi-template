@@ -3,7 +3,7 @@ from typing import Annotated
 
 import redis.asyncio as aioredis
 from api_exception import APIException
-from fastapi import Depends, Security, status
+from fastapi import Depends, Header, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,3 +91,17 @@ async def get_current_api_key(
 
 
 CurrentAPIKeyAsync = Annotated[APIKey, Depends(get_current_api_key)]
+
+
+# 在文档/Swagger 中显示 Idempotency-Key 的头部输入框
+def idempotency_key_header_for_docs(
+    _idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias=settings.IDEMPOTENCY_KEY_HEADER,
+            description="Client-supplied idempotency key used to prevent duplicate processing.",
+        ),
+    ] = None,
+) -> None:
+    # 该依赖仅用于在 OpenAPI 上展示头部输入框，真实校验由幂等性装饰器完成
+    return None
