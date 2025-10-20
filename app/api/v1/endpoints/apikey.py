@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import redis.asyncio as aioredis
 from api_exception import APIException, ResponseModel
 from fastapi import (
     APIRouter,
@@ -14,6 +15,12 @@ from pydantic import EmailStr
 
 from app.api.deps import AsyncSessionDep
 from app.core.config import settings
+from app.core.idempotency.backends.redis_backend import RedisIdempotencyBackend
+from app.core.idempotency.callbacks import (
+    default_on_in_progress,
+    default_on_key_missing,
+    default_on_signature_mismatch,
+)
 from app.core.idempotency.decorator import idempotent
 from app.core.rate_limit import rate_limit_dependency
 from app.crud import apikey_crud
@@ -37,7 +44,14 @@ router = APIRouter()
 
 
 @router.post("/", response_model=ResponseModel[APIKeyWithKey])
-@idempotent()
+@idempotent(
+    backend=RedisIdempotencyBackend(
+        aioredis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+    ),
+    on_in_progress=default_on_in_progress,
+    on_key_missing=default_on_key_missing,
+    on_signature_mismatch=default_on_signature_mismatch,
+)
 async def create_api_key(
     *,
     request: Request,  # noqa: ARG001 - used by idempotency

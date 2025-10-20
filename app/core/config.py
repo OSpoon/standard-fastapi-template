@@ -96,12 +96,10 @@ class Settings(BaseSettings):
     IDEMPOTENCY_KEY_HEADER: str = "Idempotency-Key"
     # 锁过期时间（毫秒），用于防止长时间占锁；应大于接口处理的预期上限
     IDEMPOTENCY_LOCK_TTL_MS: int = 30_000
-    # 记录缓存时间（秒），用于响应重放
-    IDEMPOTENCY_RECORD_TTL_S: int = 3_600
+    # 记录缓存时间（毫秒），用于响应重放；默认1小时
+    IDEMPOTENCY_RECORD_TTL_MS: int = 3_600_000
     # 当检测到请求正在处理中时，等待已存在请求完成的最大时间（毫秒）
     IDEMPOTENCY_WAIT_TIMEOUT_MS: int = 5_000
-    # 幂等性缓存键前缀
-    IDEMPOTENCY_REDIS_PREFIX: str = "idem"
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False

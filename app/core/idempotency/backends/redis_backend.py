@@ -4,15 +4,7 @@ import asyncio
 import time
 from typing import Any
 
-try:
-    import redis  # sync client
-except Exception:  # pragma: no cover
-    redis = None  # type: ignore
-
-try:
-    import redis.asyncio as aioredis  # async client
-except Exception:  # pragma: no cover
-    aioredis = None  # type: ignore
+import redis.asyncio as aioredis
 
 from app.core.idempotency.backends.base import BaseIdempotencyBackend
 from app.core.idempotency.types import IdempotencyRecord

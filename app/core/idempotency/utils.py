@@ -3,8 +3,32 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable
+from typing import Any
 
-from fastapi import Request
+from fastapi import Request, Response
+
+
+def extract_request_response(
+    args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> tuple[Request, Response | None]:
+    """从函数参数中提取 Request 和 Response 对象"""
+    # 允许端点签名任意位置包含 request/response
+    for a in list(args) + list(kwargs.values()):
+        if isinstance(a, Request):
+            req = a
+            resp = (
+                kwargs.get("response")
+                if isinstance(kwargs.get("response"), Response)
+                else None
+            )
+            if not resp:
+                for b in list(args) + list(kwargs.values()):
+                    if isinstance(b, Response):
+                        resp = b
+                        break
+            return req, resp
+    # 如果没得到 request,放弃(由路由层保证)
+    raise RuntimeError("Request object not found in endpoint parameters")
 
 
 async def get_request_body_bytes(request: Request) -> bytes:

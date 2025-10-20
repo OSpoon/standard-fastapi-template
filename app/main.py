@@ -36,9 +36,9 @@ add_file_handler(settings.LOG_FILE_PATH, level=logger.level)
 
 # 启动前初始化
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    logger.info("Initializing FastAPI...")
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     redis_client = await get_redis_client()
+
     FastAPICache.init(
         RedisBackend(redis_client), prefix=settings.PROJECT_NAME + "-cache"
     )
