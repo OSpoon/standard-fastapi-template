@@ -58,3 +58,7 @@ class SFExceptionCode(BaseExceptionCode):
         "IDEMPOT-102",
         "A request with the same Idempotency-Key is currently being processed.",
     )
+    IDEMPOTENCY_KEY_GENERATION_FAILED = (
+        "IDEMPOT-500",
+        "Failed to generate idempotency key.",
+    )
