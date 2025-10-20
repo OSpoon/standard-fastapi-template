@@ -2,13 +2,12 @@
 受保护的 API 接口示例，演示如何使用 API Key 验证
 """
 
-from typing import Any
-
 from api_exception import ResponseModel
 from fastapi import APIRouter, Depends
 
 from app.api.deps import CurrentAPIKeyAsync
 from app.core.rate_limit import rate_limit_dependency
+from app.models.apikey_model import APIKeyInfo
 from app.models.common_model import Message
 
 router = APIRouter()
@@ -27,22 +26,22 @@ async def protected_endpoint(
     )
 
 
-@router.get("/user-info", response_model=ResponseModel[dict[str, Any]])
+@router.get("/user-info", response_model=ResponseModel[APIKeyInfo])
 async def get_api_key_info(
     current_api_key: CurrentAPIKeyAsync,
     _: None = Depends(rate_limit_dependency),
-) -> ResponseModel[dict[str, Any]]:
+) -> ResponseModel[APIKeyInfo]:
     """
     获取当前 API Key 的信息
     """
     return ResponseModel(
-        data={
-            "email": current_api_key.email,
-            "key_name": current_api_key.name,
-            "key_prefix": current_api_key.key_prefix,
-            "is_active": current_api_key.is_active,
-            "created_at": current_api_key.created_at,
-            "last_used_at": current_api_key.last_used_at,
-            "expires_at": current_api_key.expires_at,
-        }
+        data=APIKeyInfo(
+            email=current_api_key.email,
+            key_name=current_api_key.name,
+            key_prefix=current_api_key.key_prefix,
+            is_active=current_api_key.is_active,
+            created_at=current_api_key.created_at,
+            last_used_at=current_api_key.last_used_at,
+            expires_at=current_api_key.expires_at,
+        )
     )

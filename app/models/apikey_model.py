@@ -67,3 +67,16 @@ class APIKeysPublic(SQLModel):
 # Properties to return when creating API key (包含完整的 key)
 class APIKeyWithKey(APIKeyPublic):
     key: str  # 只在创建时返回完整的 key
+
+
+# Properties to return for current API key info (用于 /user-info 端点)
+class APIKeyInfo(SQLModel):
+    """当前 API Key 的信息响应模型"""
+
+    email: EmailStr
+    key_name: str  # API Key 名称
+    key_prefix: str  # API Key 前缀（用于识别，不暴露完整 key）
+    is_active: bool
+    created_at: datetime
+    last_used_at: datetime | None
+    expires_at: datetime | None
