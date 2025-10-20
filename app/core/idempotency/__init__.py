@@ -6,10 +6,10 @@ integrated into any FastAPI project.
 
 Basic Usage:
     ```python
-    from redis import Redis
+    import redis.asyncio as aioredis
     from app.core.idempotency import idempotent, RedisIdempotencyBackend
 
-    redis_client = Redis.from_url("redis://localhost")
+    redis_client = aioredis.Redis(host="localhost", port=6379, db=0)
     backend = RedisIdempotencyBackend(redis_client, prefix="idem:")
 
     @app.post("/items")
