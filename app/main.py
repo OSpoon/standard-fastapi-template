@@ -5,10 +5,16 @@ from api_exception import (
     register_exception_handlers,
 )
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router_v1
 from app.core.config import settings
+
+
+def generate_unique_id(route: APIRoute) -> str:
+    return f"{route.tags[0]}-{route.name}"
+
 
 # 根据环境设置日志级别
 if settings.ENVIRONMENT == "production":
@@ -27,6 +33,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.API_VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    generate_unique_id_function=generate_unique_id,
 )
 
 # Set all CORS enabled origins
