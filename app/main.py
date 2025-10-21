@@ -1,6 +1,3 @@
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
-
 from api_exception import (
     ResponseFormat,
     add_file_handler,
@@ -8,18 +5,10 @@ from api_exception import (
     register_exception_handlers,
 )
 from fastapi import FastAPI
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_limiter import FastAPILimiter
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.deps import get_redis_client
 from app.api.v1.api import api_router_v1
 from app.core.config import settings
-from app.core.rate_limit import (
-    http_default_callback,
-    ws_default_callback,
-)
 
 # 根据环境设置日志级别
 if settings.ENVIRONMENT == "production":
@@ -34,29 +23,10 @@ add_file_handler(settings.LOG_FILE_PATH, level=logger.level)
 # 初始化 FastAPI 应用
 
 
-# 启动前初始化
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
-    redis_client = await get_redis_client()
-
-    FastAPICache.init(
-        RedisBackend(redis_client), prefix=settings.PROJECT_NAME + "-cache"
-    )
-    await FastAPILimiter.init(
-        redis_client,
-        http_callback=http_default_callback,
-        ws_callback=ws_default_callback,
-    )
-    yield
-    await FastAPICache.clear()
-    await FastAPILimiter.close()
-
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.API_VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan,
 )
 
 # Set all CORS enabled origins

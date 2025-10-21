@@ -1,13 +1,4 @@
 services:
-  db:
-    restart: "no"
-    ports:
-      - "5432:5432"
-
-  adminer:
-    restart: "no"
-    ports:
-      - "8080:8080"
 
   backend:
     restart: "no"
@@ -32,15 +23,4 @@ services:
     environment:
       ENVIRONMENT: local
       
-      SMTP_HOST: "mailcatcher"
-      SMTP_PORT: "1025"
-      SMTP_TLS: "false"
-      EMAILS_FROM_EMAIL: "noreply@example.com"
-
       LOG_FILE_PATH: service-dev.log
-
-  mailcatcher:
-    image: schickling/mailcatcher
-    ports:
-      - "1080:1080"
-      - "1025:1025"

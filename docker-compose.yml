@@ -1,93 +1,8 @@
 services:
-  db:
-    image: postgres:17
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
-    env_file:
-      - .env
-    environment:
-      - TZ=Asia/Shanghai
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
-
-  redis:
-    image: "redis:latest"
-    restart: always
-    ports:
-      - "6379:6379"
-    env_file:
-      - .env
-
-  adminer:
-    image: adminer
-    restart: always
-    depends_on:
-      - db
-
-  prestart:
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
-    build:
-      context: ./
-    depends_on:
-      db:
-        condition: service_healthy
-        restart: true
-    command: bash scripts/prestart.sh
-    env_file:
-      - .env
-    environment:
-      TZ: Asia/Shanghai
-      PROJECT_NAME: ${PROJECT_NAME}
-      API_VERSION: ${API_VERSION}
-      API_V1_STR: ${API_V1_STR}
-      ENVIRONMENT: ${ENVIRONMENT}
-
-      FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
-
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
-      SECRET_KEY: ${SECRET_KEY?Variable not set}
-      SUPERUSER: ${SUPERUSER?Variable not set}
-      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD?Variable not set}
-
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      SMTP_TLS: ${SMTP_TLS}
-      SMTP_SSL: ${SMTP_SSL}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
-
-      IDEMPOTENCY_KEY_HEADER: ${IDEMPOTENCY_KEY_HEADER?Variable not set}
-      IDEMPOTENCY_LOCK_TTL_MS: ${IDEMPOTENCY_LOCK_TTL_MS?Variable not set}
-      IDEMPOTENCY_RECORD_TTL_MS: ${IDEMPOTENCY_RECORD_TTL_MS?Variable not set}
-      IDEMPOTENCY_WAIT_TIMEOUT_MS: ${IDEMPOTENCY_WAIT_TIMEOUT_MS?Variable not set}
-
-      LOG_FILE_PATH: ${LOG_FILE_PATH}
 
   backend:
     image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-        restart: true
-      prestart:
-        condition: service_completed_successfully
     env_file:
       - .env
     environment:
@@ -100,28 +15,8 @@ services:
       FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
 
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
-      SECRET_KEY: ${SECRET_KEY?Variable not set}
-      SUPERUSER: ${SUPERUSER?Variable not set}
-      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD?Variable not set}
 
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      SMTP_TLS: ${SMTP_TLS}
-      SMTP_SSL: ${SMTP_SSL}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
-
-      IDEMPOTENCY_KEY_HEADER: ${IDEMPOTENCY_KEY_HEADER?Variable not set}
-      IDEMPOTENCY_LOCK_TTL_MS: ${IDEMPOTENCY_LOCK_TTL_MS?Variable not set}
-      IDEMPOTENCY_RECORD_TTL_MS: ${IDEMPOTENCY_RECORD_TTL_MS?Variable not set}
-      IDEMPOTENCY_WAIT_TIMEOUT_MS: ${IDEMPOTENCY_WAIT_TIMEOUT_MS?Variable not set}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY?Variable not set}
       
       LOG_FILE_PATH: ${LOG_FILE_PATH}
 

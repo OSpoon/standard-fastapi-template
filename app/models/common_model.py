@@ -1,15 +1,9 @@
-from sqlmodel import SQLModel
+# Qwen3-VL grounding response
+from pydantic import BaseModel
 
 
-# Generic message
-class Message(SQLModel):
-    message: str
+class GroundingResponse(BaseModel):
+    """2D grounding 响应模型"""
 
-
-# Idempotency key response
-class IdempotencyKeyResponse(SQLModel):
-    """幂等性密钥响应模型"""
-
-    idempotency_key: str  # SHA-256 哈希值（64 字符）
-    expires_in: int  # 密钥有效期（秒）
-    generated_at: str  # 生成时间（ISO 格式）
+    location: str
+    base64_image: str | None

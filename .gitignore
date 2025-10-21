@@ -11,3 +11,6 @@ wheels/
 
 # log files
 *.log
+
+# dotenv environment variables file
+.env
