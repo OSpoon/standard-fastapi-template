@@ -14,3 +14,21 @@ wheels/
 
 # dotenv environment variables file
 .env
+
+# node modules
+node_modules/
+
+# build
+build/
+
+# dist
+dist/
+
+# wheels
+wheels/
+
+# openapi.json
+openapi.json
+
+# client
+client/
